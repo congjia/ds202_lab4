@@ -4,6 +4,9 @@ author: "Haoxuan Cai"
 date: "10/24/2019"
 output: html_document
 ---
+yuhong086
+congjia
+ds202_lab4
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
