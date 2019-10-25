@@ -1,0 +1,70 @@
+---
+title: "Lab4"
+author: "Haoxuan Cai"
+date: "10/24/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading Data: Cyclone Football
+
+```{r}
+library(readxl)
+defense <- read_excel('cyclonesFootball2018.xlsx', sheet='Defensive')
+str(defense)
+offense <- read_excel('cyclonesFootball2018.xlsx', sheet='Offensive')
+str(offense)
+biography <- read_excel('cyclonesFootball2018.xlsx', sheet='Biography')
+str(biography)
+```
+
+## Part 1
+
+### 1
+
+```{r}
+defense$Name <- as.factor(defense$Name)
+defense$Opponent_Opponent <- as.factor(defense$Opponent_Opponent)
+offense$Name <- as.factor(offense$Name)
+offense$Opponent_Opponent<- as.factor(offense$Opponent_Opponent)
+biography$Name<-as.factor(biography$Name)
+
+```
+
+### 2
+
+```{r}
+defense$Tackles_Solo<- as.numeric(defense$Tackles_Solo)
+defense$Tackles_ASST<- as.numeric(defense$Tackles_ASST)
+defense$Tackles_TFL <- as.numeric(defense$Tackles_TFL)
+defense$Tackles_Sack<- as.numeric(defense$Tackles_Sack)
+defense$Turnover_FF<- as.numeric(defense$Turnover_FF)
+defense$Turnover_FR<- as.numeric(defense$Turnover_FR)
+defense$Turnover_INT<-as.numeric(defense$Turnover_INT)
+defense$Pass_QBH<-as.numeric(defense$Pass_QBH)
+defense$Pass_PB<-as.numeric(defense$Pass_PB)
+offense$Receiving_REC<-as.numeric(offense$Receiving_REC)
+offense$Receiving_YDS<-as.numeric(offense$Receiving_YDS)
+offense$Receiving_TD<- as.numeric(offense$Receiving_TD)
+offense$Rushing_ATT<-as.numeric(offense$Rushing_ATT)
+offense$Rushing_YDS<-as.numeric(offense$Rushing_YDS)
+offense$Rushing_TD<-as.numeric(offense$Rushing_TD)
+offense$`Passing_CMP-ATT`<-as.numeric(offense$`Passing_CMP-ATT`)
+offense$Passing_YDS<-as.numeric(offense$Passing_YDS)
+offense$Passing_TD<-as.numeric(offense$Passing_TD)
+offense$Passing_INT<-as.numeric(offense$Passing_INT)
+biography$Weight<-as.numeric(biography$Weight)
+```
+
+## 3
+
+## 4
+```{r}
+defClean<- defense
+offClean<-offense
+bioClean<-biography
+```
+
