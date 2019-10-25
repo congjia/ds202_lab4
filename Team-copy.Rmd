@@ -1,0 +1,166 @@
+---
+title: "Lab4"
+author: "Haoxuan Cai"
+date: "10/24/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading Data: Cyclone Football
+
+```{r}
+library(readxl)
+defense <- read_excel('cyclonesFootball2018.xlsx', sheet='Defensive')
+str(defense)
+offense <- read_excel('cyclonesFootball2018.xlsx', sheet='Offensive')
+str(offense)
+biography <- read_excel('cyclonesFootball2018.xlsx', sheet='Biography')
+str(biography)
+```
+
+## Part 1
+
+### 1
+
+```{r}
+defense$Name <- as.factor(defense$Name)
+defense$Opponent_Opponent <- as.factor(defense$Opponent_Opponent)
+offense$Name <- as.factor(offense$Name)
+offense$Opponent_Opponent<- as.factor(offense$Opponent_Opponent)
+biography$Name<-as.factor(biography$Name)
+
+```
+
+### 2
+
+```{r}
+defense$Tackles_Solo<- as.numeric(defense$Tackles_Solo)
+defense$Tackles_ASST<- as.numeric(defense$Tackles_ASST)
+defense$Tackles_TFL <- as.numeric(defense$Tackles_TFL)
+defense$Tackles_Sack<- as.numeric(defense$Tackles_Sack)
+defense$Turnover_FF<- as.numeric(defense$Turnover_FF)
+defense$Turnover_FR<- as.numeric(defense$Turnover_FR)
+defense$Turnover_INT<-as.numeric(defense$Turnover_INT)
+defense$Pass_QBH<-as.numeric(defense$Pass_QBH)
+defense$Pass_PB<-as.numeric(defense$Pass_PB)
+offense$Receiving_REC<-as.numeric(offense$Receiving_REC)
+offense$Receiving_YDS<-as.numeric(offense$Receiving_YDS)
+offense$Receiving_TD<- as.numeric(offense$Receiving_TD)
+offense$Rushing_ATT<-as.numeric(offense$Rushing_ATT)
+offense$Rushing_YDS<-as.numeric(offense$Rushing_YDS)
+offense$Rushing_TD<-as.numeric(offense$Rushing_TD)
+offense$`Passing_CMP-ATT`<-as.numeric(offense$`Passing_CMP-ATT`)
+offense$Passing_YDS<-as.numeric(offense$Passing_YDS)
+offense$Passing_TD<-as.numeric(offense$Passing_TD)
+offense$Passing_INT<-as.numeric(offense$Passing_INT)
+biography$Weight<-as.numeric(biography$Weight)
+```
+
+### 3
+```{r}
+library(tidyverse)
+bioClean <- biography %>%
+  separate(Height, c("Feet", "Inches")) %>%
+  mutate_each_(funs(as.numeric), c("Feet", "Inches")) %>%
+  group_by(Feet, Inches) %>%
+  mutate(Height=(Feet*12)+Inches)
+head(bioClean$Weight)
+```
+
+### 4
+```{r}
+defClean<- defense
+str(defClean)
+offClean<-offense
+str(offClean)
+bioClean<-biography
+str(bioClean)
+```
+
+## Part 2(A)
+
+### 1
+
+```{r}
+library(tidyr)
+defClean %>% gather( Statistic,value , Tackles_Solo:Pass_PB)
+```
+
+
+
+### 2
+
+```{r}
+defclean<-defClean %>% gather( Statistic,value , Tackles_Solo:Pass_PB)
+ggplot(defclean, aes(value, fill=Statistic)) + geom_histogram(breaks=seq(0,6,by=1)) + facet_wrap(~Statistic) + labs(title="ISU Football Defensive Statistics Histogram", x="Value", y="Count")
+```
+
+Based on the plot, Turnover_ff, Turnover_FR and Turnover_INT are the rare skills.
+
+### 3
+
+```{r}
+defclean %>%
+  filter(Statistic=="Tackles_Solo") %>% 
+  spread(Opponent_Opponent, value) %>%
+  rename(KansasState = "Kansas State", WestVirginia = "West Virginia") %>%
+  drop_na(KansasState, WestVirginia) %>%
+  ggplot(aes(x=WestVirginia, y=KansasState)) + geom_jitter(width = 0.2, height = 0.2) + labs(title="West Virginia vs Kansas State", x="West Virginia", y="Kansas State") + xlim(0,7) + ylim(0,10)
+```
+
+## Part 2(B)
+
+### 1.
+
+```{r}
+bioClean <- bioClean %>%
+  separate(Hometown, c("City", "State"), sep = ',')
+head(bioClean[,c(7,8)])
+```
+
+### 2.
+```{r}
+perState <- bioClean %>% 
+  group_by(State) %>%
+tally()
+
+ggplot(perState, aes(x=State, y=n, fill = State)) + geom_bar(stat="identity") + labs(title = "Number of Players' per Hometown State") + xlab("Players' Hometown State") + ylab("Count")
+```
+
+## Part 3
+
+### 1. 
+
+```{r}
+offClean %>%
+  inner_join(bioClean, by=c("Name"="Name"))
+```
+
+### 2.
+
+```{r}
+P32<-offClean %>%
+  inner_join(bioClean, by=c("Name"="Name"))
+P32 %>%
+  group_by(Name) %>%
+  summarize(mean_receiving_yds = mean(Receiving_YDS, na.rm = TRUE)) %>%
+  mutate_at(vars(mean_receiving_yds), ~replace(., is.nan(.), 0)) %>%
+  left_join(P32,bioClean,by=("Name"="Name")) %>%
+  ggplot(aes(x=Weight, y=mean_receiving_yds)) + geom_point()+geom_smooth(method = 'lm') + labs(title="Weight by Mean Offensive Receiving Yards", x="Weight in pounds", y="Mean Reveiving Yards")
+```
+
+### 3.
+
+```{r}
+Def <- defClean %>%
+  inner_join(bioClean, by=c("Name"="Name"))
+a = data.frame(group = "OFF", value = P32$Weight)
+b = data.frame(group = "DEF", value = Def$Weight)
+
+P33 <- rbind(a, b)
+P33$value = sapply(sapply(P33$value, as.character), as.numeric)
+ggplot(P33, aes(x = group, y = value, color = group)) + xlab("Groups") +  ylab("Weight") + labs(title = "Players' Weight on Offense and Defense") + geom_boxplot() 
+```
